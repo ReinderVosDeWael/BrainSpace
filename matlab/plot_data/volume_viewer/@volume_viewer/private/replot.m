@@ -9,7 +9,15 @@ end
 % Change images to the clicked point. 
 for ii = 1:3
     image_name = ['imagesc' num2str(ii)];
-    obj.handles.(image_name).CData = obj.get_slice(ii);
+    obj.handles.(image_name).CData = obj.get_slice(ii,1);
+end
+
+% If an overlay exists, replot it as well
+if ~isempty(obj.overlay)
+    for ii = 1:3
+        image_name = ['imagesc' num2str(ii+3)];
+        obj.handles.(image_name).CData = obj.get_slice(ii,2);
+    end
 end
 
 % Change text coordinates.

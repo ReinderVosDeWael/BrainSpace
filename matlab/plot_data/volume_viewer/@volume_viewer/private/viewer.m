@@ -85,12 +85,38 @@ for ii = 1:3
     
     % Plots the image and sets a callback for mouse clicks. 
     obj.handles.(image_name) = imagesc(obj.handles.(axes_name), ...
-        obj.get_slice(ii), ...
+        obj.get_slice(ii,1), ...
         'ButtonDownFcn', @(~,evt) image_press_callback(evt,obj,ii));
+    %% Add a listener to always set missing data to transparant and trigger it. 
+    %addlistener(obj.handles.(image_name), 'CData', 'PostSet', ...
+    %    @(~,evt)image_transparency(evt));
+    %obj.handles.(image_name).CData = obj.handles.(image_name).CData; % Trigger the listener.  
+
+end
+
+% Initialize overlay.
+for ii = 1:3
+    axes_name = ['axes' num2str(ii+3)];
+    if ~isempty(obj.overlay)
+        image_name = ['imagesc' num2str(ii+3)];
+        
+        % Plots the image.
+        obj.handles.(image_name) = imagesc(obj.handles.(axes_name), ...
+            obj.get_slice(ii,2), ...
+            'ButtonDownFcn', @(~,evt) image_press_callback(evt,obj,ii));
+        
+        % Add a listener to always set missing data to transparant and trigger it.
+        addlistener(obj.handles.(image_name), 'CData', 'PostSet', ...
+            @(~,evt)image_transparency(evt));
+        obj.handles.(image_name).CData = obj.handles.(image_name).CData; % Trigger the listener.
+        obj.handles.(axes_name).Visible = 'off';
+    else
+        obj.handles.(axes_name).Visible = 'off';
+    end
 end
 
 % Set axes properties.
-set([obj.handles.axes1,obj.handles.axes2,obj.handles.axes3], ...
+set([obj.handles.axes1,obj.handles.axes2,obj.handles.axes3, obj.handles.axes4,obj.handles.axes5,obj.handles.axes6], ...
     'DataAspectRatio'   , [1 1 1]           , ... % Square voxel sizes.
     'PlotBoxAspectRatio', [1 1 1]           , ... % Square plot boxes.
     'XTick'             , []                , ... % Remove tick marks
@@ -168,4 +194,9 @@ if new_slice < 1 || new_slice > size(obj.image,idx)
 else
     obj.slices(idx) = new_slice;
 end           
+end
+
+function image_transparency(evt)
+% Sets missing data (=nan) to transparant when its CData is changed. 
+evt.AffectedObject.AlphaData = ~isnan(evt.AffectedObject.CData);
 end
