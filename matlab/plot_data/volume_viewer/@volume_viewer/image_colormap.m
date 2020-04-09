@@ -1,10 +1,9 @@
-function colormap(obj,cmap)
+function image_colormap(obj,cmap)
 % Have the figure background blend in with the image background by setting
 % figure/axis colors to the minimum color in the colormap.
-if nargin == 2
-    obj.handles.figure1.Colormap = cmap;
-end
-min_color = obj.handles.figure1.Colormap(1,:);
+
+% Get colormap info.
+min_color = cmap(1,:);
 
 % Set figure color
 obj.handles.figure1.Color = min_color;
@@ -13,7 +12,8 @@ obj.handles.figure1.Color = min_color;
 set([obj.handles.axes1,obj.handles.axes2,obj.handles.axes3], ...
     'Color'             , min_color         , ...
     'XColor'            , min_color         , ...
-    'YColor'            , min_color         ); 
+    'YColor'            , min_color         , ...
+    'ColorMap'          , cmap              ); % Listener is not recursive. 
 
 % Set text color to inverse of figure color
 set([obj.handles.text1,obj.handles.text2,obj.handles.text3], ...

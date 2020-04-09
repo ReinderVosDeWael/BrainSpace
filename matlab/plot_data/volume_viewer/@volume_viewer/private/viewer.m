@@ -68,13 +68,8 @@ guidata(hObject, handles);
 obj = varargin{1};
 obj.handles = handles; 
 
-% Whenever the figure colormap changes, set the axis/figure colors to the
-% minimum of the colormap. 
-addlistener(obj.handles.figure1,'Colormap','PostSet',@(~,~)obj.colormap());
-
 % Modify some figure parameters. 
 set(obj.handles.figure1                 , ...
-    'Colormap'          , gray          , ... % Default colormap set to gray.
     'Units'             , 'pixels'      , ... % Needed to detect cursor location. 
     'Name'              ,'BrainSpace Volume Viewer'); % Default name set to BrainSpace Volume Viewer.
 
@@ -87,12 +82,16 @@ for ii = 1:3
     obj.handles.(image_name) = imagesc(obj.handles.(axes_name), ...
         obj.get_slice(ii,1), ...
         'ButtonDownFcn', @(~,evt) image_press_callback(evt,obj,ii));
-    %% Add a listener to always set missing data to transparant and trigger it. 
-    %addlistener(obj.handles.(image_name), 'CData', 'PostSet', ...
-    %    @(~,evt)image_transparency(evt));
-    %obj.handles.(image_name).CData = obj.handles.(image_name).CData; % Trigger the listener.  
+ 
+    % Add a listener to always set missing data to transparant and trigger it. 
+    addlistener(obj.handles.(image_name), 'CData', 'PostSet', ...
+        @(~,evt)image_transparency(evt));
+    obj.handles.(image_name).CData = obj.handles.(image_name).CData; % Trigger the listener.  
 
 end
+
+% Default colormap is gray. Could make it a property. 
+obj.image_colormap(gray)
 
 % Initialize overlay.
 for ii = 1:3
@@ -114,6 +113,9 @@ for ii = 1:3
         obj.handles.(axes_name).Visible = 'off';
     end
 end
+
+% Default colormap is autumn; could make it a property.
+obj.overlay_colormap(autumn);
 
 % Set axes properties.
 set([obj.handles.axes1,obj.handles.axes2,obj.handles.axes3, obj.handles.axes4,obj.handles.axes5,obj.handles.axes6], ...
