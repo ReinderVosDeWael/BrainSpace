@@ -5,6 +5,7 @@ classdef volume_viewer < handle
     properties(SetAccess = private)
         image % Anatomical image; Should only be defined at initialization.
         overlay % Gradient/Parcellation image. Could potentially be changed to a data vector + parcellation, and we generate the overlay internally. 
+        handles % Graphics object handles. 
     end
     
     % Properties that the user may modify. SetObservable allows us to call
@@ -12,7 +13,6 @@ classdef volume_viewer < handle
     % this a lot to call a function that plots new slices whenever the
     % slice property changes.
     properties(SetObservable)
-        handles % Lets advanced users modify handle properties.
         slices % Lets advanced users programatically set slice numbers. 
     end
     
@@ -42,7 +42,7 @@ classdef volume_viewer < handle
             obj.slices = round(size(obj.image)/2);
                         
             % Initialize figure. 
-            obj.viewer(obj.image);
+            obj.build_figure(obj.image);
             
             % After setting slices the first time, whenever the slices
             % property is changed we will replot the images.
