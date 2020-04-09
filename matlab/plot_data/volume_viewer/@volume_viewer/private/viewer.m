@@ -156,8 +156,14 @@ function image_press_callback(evt,obj,idx)
 % Get mouse click coordinates. 
 coord = round(evt.IntersectionPoint);
 
-% Gotta flip the dimensions.
-coord([1,2]) = coord([2,1]);
+% Due to image rotation in get_slice, we have to invert the second coordinate. 
+%coord([1,2]) = coord([2,1]);
+if idx == 3 
+    coord_max = size(obj.image,2);
+else
+    coord_max = size(obj.image,3);
+end
+coord(2) = coord_max-coord(2)+1; 
 
 % Compute the new slices.
 new_slices = [coord(1:idx-1),obj.slices(idx),coord(idx:2)]; % Change the slices, the clicked image remains on the same slice.
