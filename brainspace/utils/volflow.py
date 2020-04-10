@@ -10,7 +10,7 @@ def fmrivols2conn(fmri_input, atlas_filename, confounds_fn="", measure='correlat
     Takes 4D fmri volumes from different and extracts the connectivity matrix
     Parameters
     ----------
-    fmri_filenames: this variable can be:
+    fmri_input: this variable can be:
         path Fullpath to functional images in nifti
         List of Fullpath to functional images in nifti
         nibabel nifti object
