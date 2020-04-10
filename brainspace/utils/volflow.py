@@ -13,7 +13,7 @@ def fmrivols2conn(fmri_filenames, atlas_filename, confounds_fn="", measure='corr
         List Fullpath to functional images in nifti
     altas_filename: path
         Fullpath to the parcellation to create the FC matrix.
-        Must be in the same space than functional 
+        Must be in the same space than functional images 
     confounds_fn (optional): path
         Paths to a csv type files with the confound regressors for each dataset.
     measure: str
