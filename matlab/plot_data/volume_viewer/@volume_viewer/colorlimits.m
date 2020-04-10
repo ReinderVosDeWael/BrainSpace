@@ -12,6 +12,6 @@ if limits(1) >= limits(2)
 end
 
 % Set color limits for the axes and colorbar. 
-set(obj.handles.axes,'CLim',limits);
+set([obj.handles.axes1,obj.handles.axes2,obj.handles.axes3],'CLim',limits);
 drawnow
 end
