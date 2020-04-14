@@ -67,11 +67,11 @@ unfinished work.
 An adopted PR should be updated to merge or rebase the current master, and a new PR should be created (see
 below) that references the original PR.
 
-.. image:: https://img.shields.io/badge/-matlab-f9d0c4.svg
+|matlab| and |python|
 
-and
+.. |matlab| image:: https://img.shields.io/badge/-matlab-f9d0c4.svg
 
-.. image:: https://img.shields.io/badge/-python-162b70.svg
+.. |python| image:: https://img.shields.io/badge/-python-162b70.svg
 
 *These issues are specific to the MATLAB/Python implementation of BrainSpace.*
 
@@ -142,4 +142,4 @@ The development team member who accepts/merges your pull request will include yo
 
 **Thank you! You're awesome.**
 
-Based on contributing guidelines from the `STEMMRoleModels <http://stemmrolemodels.com/>`_ project and `BIDSonym <https://github.com/PeerHerholz/BIDSonym>`_.*
+Based on contributing guidelines from the `STEMMRoleModels <http://stemmrolemodels.com/>`_ project and `BIDSonym <https://github.com/PeerHerholz/BIDSonym>`_.
