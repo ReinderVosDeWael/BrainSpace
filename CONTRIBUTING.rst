@@ -8,9 +8,8 @@ Welcome to BrainSpace! We're happy you want to contribute.
 These guidelines are designed to make it as easy as possible to get involved. If you have any questions that aren't discussed below, please let us know by opening an `issue <https://github.com/PeerHerholz/BIDSonym>`_!
 
 Before you start you'll need to set up a free `GitHub <https://github.com>`_ account and sign in. Here are some `instructions <https://help.github.com/articles/signing-up-for-a-new-github-account/>`_.
-If you are not familiar with version control systems such as git,
-`introductions and tutorials <http://www.reproducibleimaging.org/module-reproducible-basics/02-vcs/>`_
-may be found on `ReproducibleImaging.org <https://www.reproducibleimaging.org>`_.
+If you are not familiar with version control systems such as git, please see these
+`introductions and tutorials <http://www.reproducibleimaging.org/module-reproducible-basics/02-vcs/>`_.
 
 Already know what you're looking for in this guide? Jump to the following sections:
 
