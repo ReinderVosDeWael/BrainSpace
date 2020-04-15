@@ -6,6 +6,7 @@ classdef volume_viewer < handle
         image % Anatomical image; Should only be defined at initialization.
         overlay % Gradient/Parcellation image. Could potentially be changed to a data vector + parcellation, and we generate the overlay internally. 
         handles % Graphics object handles. 
+        metadata % For storing metadata with figures. 
     end
     
     % Properties that the user may modify. SetObservable allows us to call
@@ -24,25 +25,80 @@ classdef volume_viewer < handle
             
             % Parse the input.
             is_3d_numeric = @(x)numel(size(x)) == 3 && isnumeric(x); 
+            is_scalar_numeric = @(x)numel(x)==1 && isnumeric(x);
             p = inputParser();
-            addRequired(p,'image',is_3d_numeric)  
-            addOptional(p,'overlay',[],is_3d_numeric)  
+            addRequired(p,'image')  
+            addOptional(p,'overlay',[])
+            addParameter(p,'gradient_nr',1,is_scalar_numeric);
+            addParameter(p,'group_nr',1,is_scalar_numeric);
+            addParameter(p,'aligned', [], @islogical);
+            addParameter(p,'parcellation',[],is_3d_numeric); 
+            
             parse(p, varargin{:}); 
+            R = p.Results; 
             
             % Check data compatiblity
-            if ~isempty(p.Results.overlay)
-                if ~all(size(p.Results.image) == size(p.Results.overlay))
+            if ~isempty(R.overlay)
+                if ~all(size(R.image) == size(R.overlay))
                     error('Image and overlay must have the same dimensions.');
                 end
             end
             
+            % Build the image. 
+            if is_3d_numeric(R.image)
+                % If a 3D volume is provided.
+                obj.image = R.image;
+            elseif ischar(R.image)
+                % If a 3D volume file is provided. 
+                obj.image = load_volume(R.image); 
+            end
+            
+            % Build the overlay.
+            if is_3d_numeric(overlay)
+                % If a 3D volume is provided.
+                obj.overlay = R.overlay;
+            elseif ischar(R.overlay)
+                % If a 3D volume file is provided. 
+                obj.overlay = load_volume(R.overlay); 
+            elseif isa(R.overlay,'GradientMaps')
+                % If a GradientMaps object is provided. 
+                
+                % Check if a parcellation is provided.
+                if isempty(R.parcellation)
+                    error('If a GradientMaps object is provided, then a parcellation volume is obligatory.');
+                elseif ischar(R.parcellation)
+                    R.parcellation = load_volume(R.parcellation);
+                elseif ~isnumeric(R.parcellation)
+                    error('Parcellation must either be a volume file or a 3d matrix.');
+                end
+                
+                % Grab the correct gradient.
+                if isempty(R.aligned)
+                    R.aligned = isempty(overlay.aligned);
+                end
+                if R.aligned
+                    field = aligned;
+                else
+                    field = gradients;
+                end
+                
+                % Convert gradient vector to volume. 
+                gradient = overlay.(field){R.group_nr}(:,r.gradient_nr);
+                obj.overlay = parcel2full(gradient,R.parcellation); 
+                
+                % Store metadata. 
+                obj.metadata = overlay.methods;
+            else
+                error('The overlay must be a GradientMaps object or 3D volume (file).');
+            end
+                        
             % Set some object properties.
-            obj.image = p.Results.image;
-            obj.overlay = p.Results.overlay;
+            %obj.image = R.image;
+            %obj.overlay = R.overlay;
             obj.slices = round(size(obj.image)/2);
                         
             % Initialize figure. 
-            obj.build_figure(obj.image);
+            obj.build_figure();
             
             % After setting slices the first time, whenever the slices
             % property is changed we will replot the images.
