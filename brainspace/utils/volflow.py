@@ -5,7 +5,7 @@ import nibabel as nib
 import numpy as np
 
 
-def fmrivols2conn(fmri_input, atlas_filename, confounds_fn="", measure='correlation'):
+def fmrivols2conn(fmri_input, atlas_filename, confounds_fn=None, measure='correlation'):
     """
     Takes 4D fmri volumes from different and extracts the connectivity matrix
     Parameters
@@ -36,7 +36,7 @@ def fmrivols2conn(fmri_input, atlas_filename, confounds_fn="", measure='correlat
         timeseries = []
         # loop that extracts the timeseries for each volume
         for i,volume in enumerate(fmri_input):
-            if confounds_fn == "":
+            if confounds_fn == None:
                 timeseries.append(masker.fit_transform(volume).T)
             else:
                 timeseries.append(masker.fit_transform(volume, confounds=confounds_fn[i]).T)
