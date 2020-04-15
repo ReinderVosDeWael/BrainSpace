@@ -36,7 +36,7 @@ def fmrivols2conn(fmri_input, atlas_filename, confounds_fn=None, measure='correl
         timeseries = []
         # loop that extracts the timeseries for each volume
         for i,volume in enumerate(fmri_input):
-            if confounds_fn == None:
+            if confounds_fn is None:
                 timeseries.append(masker.fit_transform(volume).T)
             else:
                 timeseries.append(masker.fit_transform(volume, confounds=confounds_fn[i]).T)
@@ -44,7 +44,10 @@ def fmrivols2conn(fmri_input, atlas_filename, confounds_fn=None, measure='correl
         final_ts = np.mean(timeseries,axis=0)
         # call fit_transform from ConnectivityMeasure object
     elif isinstance(fmri_input,str) or  hasattr(fmri_input,'affine'):
-        final_ts = masker.fit_transform(fmri_input).T
+        if confounds_fn is None:
+            final_ts = masker.fit_transform(fmri_input, confounds=confounds_fn).T
+        else:
+            final_ts = masker.fit_transform(fmri_input).T
     FC_matrix = connectome_measure.fit_transform([final_ts.T])[0]
     # saving each subject correlation to correlations
     return FC_matrix
