@@ -18,8 +18,11 @@ def fmrivols2conn(fmri_input, atlas_filename, confounds_fn=None, measure='correl
     altas_filename: path
         Fullpath to the parcellation to create the FC matrix of nibabel object containin the atlas.
         Must be in the same space than functional images 
-    confounds_fn (optional): path
-        Paths to a csv type files with the confound regressors for each dataset.
+    confounds_fn (optional): this variable can be
+        Paths to a csv type files with the confound regressors for one dataset.
+        List of Fullpath to csv files with confound regressors for the datasets.
+        numpy array with regressors where each column is a regressor.
+        List of numpy arrays with regressors for each dataset
     measure: str
         {"correlation", "partial correlation", "tangent", "covariance", "precision"}, optional
     Returns
