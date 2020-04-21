@@ -37,61 +37,63 @@ classdef volume_viewer < handle
             parse(p, varargin{:}); 
             R = p.Results; 
             
-            % Check data compatiblity
-            if ~isempty(R.overlay)
-                if ~all(size(R.image) == size(R.overlay))
-                    error('Image and overlay must have the same dimensions.');
-                end
-            end
-            
             % Build the image. 
             if is_3d_numeric(R.image)
                 % If a 3D volume is provided.
                 obj.image = R.image;
             elseif ischar(R.image)
                 % If a 3D volume file is provided. 
-                obj.image = load_volume(R.image); 
+                obj.image = load_volume(R.image);             
             end
             
             % Build the overlay.
-            if is_3d_numeric(overlay)
-                % If a 3D volume is provided.
-                obj.overlay = R.overlay;
-            elseif ischar(R.overlay)
-                % If a 3D volume file is provided. 
-                obj.overlay = load_volume(R.overlay); 
-            elseif isa(R.overlay,'GradientMaps')
-                % If a GradientMaps object is provided. 
-                
-                % Check if a parcellation is provided.
-                if isempty(R.parcellation)
-                    error('If a GradientMaps object is provided, then a parcellation volume is obligatory.');
-                elseif ischar(R.parcellation)
-                    R.parcellation = load_volume(R.parcellation);
-                elseif ~isnumeric(R.parcellation)
-                    error('Parcellation must either be a volume file or a 3d matrix.');
-                end
-                
-                % Grab the correct gradient.
-                if isempty(R.aligned)
-                    R.aligned = isempty(overlay.aligned);
-                end
-                if R.aligned
-                    field = aligned;
+            if ~isempty(R.overlay)
+                if is_3d_numeric(R.overlay)
+                    % If a 3D volume is provided.
+                    obj.overlay = R.overlay;
+                elseif ischar(R.overlay)
+                    % If a 3D volume file is provided. 
+                    obj.overlay = load_volume(R.overlay); 
+                elseif isa(R.overlay,'GradientMaps')
+                    % If a GradientMaps object is provided. 
+
+                    % Check if a parcellation is provided.
+                    if isempty(R.parcellation)
+                        error('If a GradientMaps object is provided, then a parcellation volume is obligatory.');
+                    elseif ischar(R.parcellation)
+                        R.parcellation = load_volume(R.parcellation);
+                    elseif ~isnumeric(R.parcellation)
+                        error('Parcellation must either be a volume file or a 3d matrix.');
+                    end
+
+                    % Grab the correct gradient.
+                    if isempty(R.aligned)
+                        R.aligned = isempty(overlay.aligned);
+                    end
+                    if R.aligned
+                        field = aligned;
+                    else
+                        field = gradients;
+                    end
+
+                    % Convert gradient vector to volume. 
+                    gradient = overlay.(field){R.group_nr}(:,r.gradient_nr);
+                    obj.overlay = parcel2full(gradient,R.parcellation); 
+
+                    % Store metadata. 
+                    obj.metadata = overlay.methods;
                 else
-                    field = gradients;
+                    error('The overlay must be a GradientMaps object or 3D volume (file).');
                 end
-                
-                % Convert gradient vector to volume. 
-                gradient = overlay.(field){R.group_nr}(:,r.gradient_nr);
-                obj.overlay = parcel2full(gradient,R.parcellation); 
-                
-                % Store metadata. 
-                obj.metadata = overlay.methods;
-            else
-                error('The overlay must be a GradientMaps object or 3D volume (file).');
             end
-                        
+            
+            % Check data compatiblity
+            if ~isempty(R.overlay)
+                if ~all(size(obj.image) == size(obj.overlay))
+                    error('Image and overlay must have the same dimensions.');
+                end
+            end
+
             % Set some object properties.
             %obj.image = R.image;
             %obj.overlay = R.overlay;
