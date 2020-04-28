@@ -15,6 +15,17 @@ classdef volume_viewer < handle
     % slice property changes.
     properties(SetObservable)
         slices % Lets advanced users programatically set slice numbers. 
+        threshold_lower
+        threshold_upper
+        remove_zero
+    end
+    
+    properties(Dependent, Hidden)
+        plotted_overlay
+    end
+    
+    properties(Hidden, Access = private)
+        threshold_overlay
     end
     
     %% Methods of the class (i.e. functions). 
@@ -25,14 +36,18 @@ classdef volume_viewer < handle
             
             % Parse the input.
             is_3d_numeric = @(x)numel(size(x)) == 3 && isnumeric(x); 
-            is_scalar_numeric = @(x)numel(x)==1 && isnumeric(x);
+%             is_scalar_numeric = @(x)numel(x)==1 && isnumeric(x);
+            is_image = @(x) ischar(x) || (isnumeric(x) && numel(size(x)) == 3);
             p = inputParser();
-            addRequired(p,'image')  
-            addOptional(p,'overlay',[])
-            addParameter(p,'gradient_nr',1,is_scalar_numeric);
-            addParameter(p,'group_nr',1,is_scalar_numeric);
-            addParameter(p,'aligned', [], @islogical);
-            addParameter(p,'parcellation',[],is_3d_numeric); 
+            addRequired(p,'image',is_image)  
+            addOptional(p,'overlay',[],is_image)
+%             addParameter(p,'gradient_nr',1,is_scalar_numeric);
+%             addParameter(p,'group_nr',1,is_scalar_numeric);
+%             addParameter(p,'aligned', [], @islogical);
+%             addParameter(p,'parcellation',[],is_3d_numeric); 
+            addParameter(p,'remove_zero',true, @islogical);
+            addParameter(p,'threshold_lower',false);
+            addParameter(p,'threshold_upper',false); 
             
             parse(p, varargin{:}); 
             R = p.Results; 
@@ -54,34 +69,34 @@ classdef volume_viewer < handle
                 elseif ischar(R.overlay)
                     % If a 3D volume file is provided. 
                     obj.overlay = load_volume(R.overlay); 
-                elseif isa(R.overlay,'GradientMaps')
-                    % If a GradientMaps object is provided. 
-
-                    % Check if a parcellation is provided.
-                    if isempty(R.parcellation)
-                        error('If a GradientMaps object is provided, then a parcellation volume is obligatory.');
-                    elseif ischar(R.parcellation)
-                        R.parcellation = load_volume(R.parcellation);
-                    elseif ~isnumeric(R.parcellation)
-                        error('Parcellation must either be a volume file or a 3d matrix.');
-                    end
-
-                    % Grab the correct gradient.
-                    if isempty(R.aligned)
-                        R.aligned = isempty(overlay.aligned);
-                    end
-                    if R.aligned
-                        field = aligned;
-                    else
-                        field = gradients;
-                    end
-
-                    % Convert gradient vector to volume. 
-                    gradient = overlay.(field){R.group_nr}(:,r.gradient_nr);
-                    obj.overlay = parcel2full(gradient,R.parcellation); 
-
-                    % Store metadata. 
-                    obj.metadata = overlay.methods;
+%                 elseif isa(R.overlay,'GradientMaps')
+%                     % If a GradientMaps object is provided. 
+% 
+%                     % Check if a parcellation is provided.
+%                     if isempty(R.parcellation)
+%                         error('If a GradientMaps object is provided, then a parcellation volume is obligatory.');
+%                     elseif ischar(R.parcellation)
+%                         R.parcellation = load_volume(R.parcellation);
+%                     elseif ~isnumeric(R.parcellation)
+%                         error('Parcellation must either be a volume file or a 3d matrix.');
+%                     end
+% 
+%                     % Grab the correct gradient.
+%                     if isempty(R.aligned)
+%                         R.aligned = isempty(overlay.aligned);
+%                     end
+%                     if R.aligned
+%                         field = aligned;
+%                     else
+%                         field = gradients;
+%                     end
+% 
+%                     % Convert gradient vector to volume. 
+%                     gradient = overlay.(field){R.group_nr}(:,r.gradient_nr);
+%                     obj.overlay = parcel2full(gradient,R.parcellation); 
+% 
+%                     % Store metadata. 
+%                     obj.metadata = overlay.methods;
                 else
                     error('The overlay must be a GradientMaps object or 3D volume (file).');
                 end
@@ -95,16 +110,22 @@ classdef volume_viewer < handle
             end
 
             % Set some object properties.
-            %obj.image = R.image;
-            %obj.overlay = R.overlay;
+            obj.threshold_overlay = [1,2]; % Is changed in build_figure; just need to initialize with something. 
+            obj.threshold_lower = R.threshold_lower;
+            obj.threshold_upper = R.threshold_upper; 
+            obj.remove_zero = R.remove_zero; 
             obj.slices = round(size(obj.image)/2);
                         
             % Initialize figure. 
             obj.build_figure();
             
             % After setting slices the first time, whenever the slices
-            % property is changed we will replot the images.
+            % property is changed we will replot the images. Also replot
+            % when any of the other obserable properties is modified.
             addlistener(obj,'slices','PostSet',@(~,~)obj.replot);
+            addlistener(obj,'threshold_lower','PostSet',@(~,~)obj.replot);
+            addlistener(obj,'threshold_upper','PostSet',@(~,~)obj.replot);
+            addlistener(obj,'remove_zero','PostSet',@(~,~)obj.replot);
         end
         
         %% Set/Get functions. 
@@ -126,6 +147,19 @@ classdef volume_viewer < handle
             
             % Set slices. 
             obj.slices = new_slices; 
+        end
+        
+        function plotted_overlay = get.plotted_overlay(obj)
+            plotted_overlay = obj.overlay;
+            if obj.threshold_lower
+                plotted_overlay(plotted_overlay <= obj.threshold_overlay(1)) = nan; 
+            end
+            if obj.threshold_upper
+                plotted_overlay(plotted_overlay >= obj.threshold_overlay(2)) = nan;
+            end
+            if obj.remove_zero
+                plotted_overlay(plotted_overlay == 0) = nan;
+            end
         end
     end
 end

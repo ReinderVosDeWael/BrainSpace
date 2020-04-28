@@ -15,7 +15,7 @@ end
 if type == 1 
     img = obj.image;
 elseif type == 2
-    img = obj.overlay;
+    img = obj.plotted_overlay;
 end
 
 % Grab the slice. Rotate to have MNI image in correct orientation. 

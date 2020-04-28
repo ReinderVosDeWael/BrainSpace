@@ -23,7 +23,8 @@ elseif lower(image) == "overlay"
     set([obj.handles.axes4,obj.handles.axes5,obj.handles.axes6],'CLim',limits);
     obj.handles.overlay_colorbar.Limits = limits;
     obj.handles.overlay_colorbar.Ticks = limits;
+    obj.threshold_overlay = limits; 
 end
 
-drawnow
+obj.replot();
 end
