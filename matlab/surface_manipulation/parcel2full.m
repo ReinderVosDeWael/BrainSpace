@@ -21,8 +21,8 @@ if iscell(parcellated_data)
 end
 
 % Check for correct size of parcellation.
-sz = numel(parcellated_data,1); 
-if max(parcellation) ~= sz
+sz = numel(parcellated_data); 
+if max(parcellation(:)) ~= sz
     error('The highest number in the parcellation scheme must be equivalent to number of parcels.');
 end
 

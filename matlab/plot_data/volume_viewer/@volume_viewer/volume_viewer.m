@@ -6,7 +6,6 @@ classdef volume_viewer < handle
         image % Anatomical image; Should only be defined at initialization.
         overlay % Gradient/Parcellation image. Could potentially be changed to a data vector + parcellation, and we generate the overlay internally. 
         handles % Graphics object handles. 
-        metadata % For storing metadata with figures. 
     end
     
     % Properties that the user may modify. SetObservable allows us to call
@@ -15,17 +14,17 @@ classdef volume_viewer < handle
     % slice property changes.
     properties(SetObservable)
         slices % Lets advanced users programatically set slice numbers. 
-        threshold_lower
-        threshold_upper
-        remove_zero
+        threshold_lower % Remove values below the overlay color limit
+        threshold_upper % Remove values above the overlay color limit
+        remove_zero % Remove zeros. 
     end
     
     properties(Dependent, Hidden)
-        plotted_overlay
+        plotted_overlay % Thresholded overlay.
     end
     
     properties(Hidden, Access = private)
-        threshold_overlay
+        threshold_overlay % Value at which to threshold the overlay. 
     end
     
     %% Methods of the class (i.e. functions). 
@@ -36,15 +35,10 @@ classdef volume_viewer < handle
             
             % Parse the input.
             is_3d_numeric = @(x)numel(size(x)) == 3 && isnumeric(x); 
-%             is_scalar_numeric = @(x)numel(x)==1 && isnumeric(x);
             is_image = @(x) ischar(x) || (isnumeric(x) && numel(size(x)) == 3);
             p = inputParser();
             addRequired(p,'image',is_image)  
             addOptional(p,'overlay',[],is_image)
-%             addParameter(p,'gradient_nr',1,is_scalar_numeric);
-%             addParameter(p,'group_nr',1,is_scalar_numeric);
-%             addParameter(p,'aligned', [], @islogical);
-%             addParameter(p,'parcellation',[],is_3d_numeric); 
             addParameter(p,'remove_zero',true, @islogical);
             addParameter(p,'threshold_lower',false);
             addParameter(p,'threshold_upper',false); 
@@ -69,36 +63,8 @@ classdef volume_viewer < handle
                 elseif ischar(R.overlay)
                     % If a 3D volume file is provided. 
                     obj.overlay = load_volume(R.overlay); 
-%                 elseif isa(R.overlay,'GradientMaps')
-%                     % If a GradientMaps object is provided. 
-% 
-%                     % Check if a parcellation is provided.
-%                     if isempty(R.parcellation)
-%                         error('If a GradientMaps object is provided, then a parcellation volume is obligatory.');
-%                     elseif ischar(R.parcellation)
-%                         R.parcellation = load_volume(R.parcellation);
-%                     elseif ~isnumeric(R.parcellation)
-%                         error('Parcellation must either be a volume file or a 3d matrix.');
-%                     end
-% 
-%                     % Grab the correct gradient.
-%                     if isempty(R.aligned)
-%                         R.aligned = isempty(overlay.aligned);
-%                     end
-%                     if R.aligned
-%                         field = aligned;
-%                     else
-%                         field = gradients;
-%                     end
-% 
-%                     % Convert gradient vector to volume. 
-%                     gradient = overlay.(field){R.group_nr}(:,r.gradient_nr);
-%                     obj.overlay = parcel2full(gradient,R.parcellation); 
-% 
-%                     % Store metadata. 
-%                     obj.metadata = overlay.methods;
                 else
-                    error('The overlay must be a GradientMaps object or 3D volume (file).');
+                    error('The overlay must be a 3D volume (file).');
                 end
             end
             

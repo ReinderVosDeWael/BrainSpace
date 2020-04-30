@@ -121,8 +121,8 @@ for ii = 1:3
         obj.handles.overlay_colorbar.FontSize = 16;
 
         % Default colormap is autumn; could make it a property.
-        obj.colormap(autumn,'overlay');
-        limits_overlay = vpa(prctile(obj.overlay(:),[95,100]),3);
+        obj.colormap(parula,'overlay');
+        limits_overlay = vpa(prctile(obj.overlay(:),[2.5,97.5]),3);
         obj.colorlimits(double(limits_overlay),'overlay');
     else
         obj.handles.(axes_name).Visible = 'off';
