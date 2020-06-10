@@ -1,5 +1,5 @@
 %% Figure initialization. 
-function varargout = viewer(varargin)
+function varargout = build_figure(varargin)
 % VIEWER MATLAB code for viewer.fig
 %      VIEWER, by itself, creates a new VIEWER or raises the existing
 %      singleton*.
@@ -71,7 +71,7 @@ obj.handles = handles;
 % Modify some figure parameters. 
 set(obj.handles.figure1                 , ...
     'Units'             , 'pixels'      , ... % Needed to detect cursor location. 
-    'Name'              ,'BrainSpace Volume Viewer'); % Default name set to BrainSpace Volume Viewer.
+    'Name'              , 'BrainSpace Volume Viewer'); % Default name set to BrainSpace Volume Viewer.
 
 % Initialize images. 
 for ii = 1:3
@@ -87,11 +87,17 @@ for ii = 1:3
     addlistener(obj.handles.(image_name), 'CData', 'PostSet', ...
         @(~,evt)image_transparency(evt));
     obj.handles.(image_name).CData = obj.handles.(image_name).CData; % Trigger the listener.  
-
 end
 
-% Default colormap is gray. Could make it a property. 
-obj.image_colormap(gray)
+% Add colorbars.
+obj.handles.image_colorbar = colorbar(obj.handles.axes1);
+obj.handles.image_colorbar.Position = [.07 .3 .02 .4];
+obj.handles.image_colorbar.FontSize = 16;
+
+% Default color limits is 2.5th/97.5th percentile. Only set it here so the
+% overlay colorbar string color is changed too. 
+limits_image = vpa(prctile(obj.image(:),[2.5,97.5]),3);
+obj.colorlimits(double(limits_image),'image');
 
 % Initialize overlay.
 for ii = 1:3
@@ -109,13 +115,22 @@ for ii = 1:3
             @(~,evt)image_transparency(evt));
         obj.handles.(image_name).CData = obj.handles.(image_name).CData; % Trigger the listener.
         obj.handles.(axes_name).Visible = 'off';
+        
+        obj.handles.overlay_colorbar = colorbar(obj.handles.axes4);
+        obj.handles.overlay_colorbar.Position = [.9 .3 .02 .4];
+        obj.handles.overlay_colorbar.FontSize = 16;
+
+        % Default colormap is autumn; could make it a property.
+        obj.colormap(parula,'overlay');
+        limits_overlay = vpa(prctile(obj.overlay(:),[2.5,97.5]),3);
+        obj.colorlimits(double(limits_overlay),'overlay');
     else
         obj.handles.(axes_name).Visible = 'off';
     end
 end
 
-% Default colormap is autumn; could make it a property.
-obj.overlay_colormap(autumn);
+% Default colormap is gray. Could make it a property. 
+obj.colormap(gray,'image')
 
 % Set axes properties.
 set([obj.handles.axes1,obj.handles.axes2,obj.handles.axes3, obj.handles.axes4,obj.handles.axes5,obj.handles.axes6], ...

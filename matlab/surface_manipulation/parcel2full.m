@@ -1,5 +1,5 @@
 function full_data = parcel2full(parcellated_data,parcellation)
-% PARCEL2FULL   Upsamples parcel data to vertex data.
+% PARCEL2FULL   Upsamples parcel data to a full surface mesh or volume.
 %
 %   full_data = parcel2full(parcellated_data,parcellation) takes n-by-1
 %   vector parcellated_data and creates a new m-by-1 vector full_data,
@@ -21,9 +21,9 @@ if iscell(parcellated_data)
 end
 
 % Check for correct size of parcellation.
-sz = size(parcellated_data,1); 
-if max(parcellation) ~= sz
-    error('The highest number in the parcellation scheme must be equivalent to length of the first dimension of the parcellated data.');
+sz = numel(parcellated_data); 
+if max(parcellation(:)) ~= sz
+    error('The highest number in the parcellation scheme must be equivalent to number of parcels.');
 end
 
 % Check if all numbers are included. 
@@ -36,6 +36,12 @@ parcellation(parcellation == 0) = sz+1;
 parcellation(isnan(parcellation)) = sz+1; 
 parcellated_data(end+1,:) = nan; 
 
-% Convert parcellated to full. 
-full_data = parcellated_data(parcellation,:); 
+% Convert parcellated to full.
+full_data = parcellated_data(parcellation(:),:); 
+
+% Reshape volumes
+if ~isvector(parcellation)
+    full_data = reshape(full_data,size(parcellation));
 end
+end
+

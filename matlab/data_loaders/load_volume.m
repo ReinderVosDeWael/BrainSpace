@@ -6,7 +6,10 @@ function [volume,header] = load_volume(file)
 %
 % ADD LINK TO BRAINSPACE DOCUMENTATION. 
 
-% Niftiread is part of the image processing toolbox 
+if isstring(file) || iscell(file)
+    file = char(file);
+end
+
 if endsWith(file,{'.nii.gz','.nii'})
     nii = load_nii(file);
     volume = nii.img; 
